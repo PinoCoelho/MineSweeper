@@ -26,8 +26,18 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
     ArrayList<Integer> xPositions;
     ArrayList<Integer> yPositions;
 
+    boolean flagging;
+    int count = 0;
+	int lastXchecked;
+	int lastYchecked;
+    int xZero;
+    int yZero;
+
     public Minesweeper() //Donde se creará toda la interfáz a mostrar
     {
+        lastXchecked = size + 1;
+        lastYchecked = size + 1;
+
         // Posiciones guardadas en un array
         xPositions = new ArrayList<Integer>();
         yPositions = new ArrayList<Integer>();
@@ -185,11 +195,21 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
 		
 		if(!over) //Si ganó entonces se mete aquí
 		{
-            buttons[y][x].setText(String.valueOf(solution[y][x])); 
+            getColor(y, x);
+
+            if (solution[y][x] == 0)
+            {
+                xZero = x;
+                yZero = y;
+
+                count = 0;
+
+                display();
+            } 
             checkWinner(); //Llama a la función cuando gana
 		}
 	}
-
+    
     public void checkWinner() //Función cuando se gana
 	{
 		int buttonsleft = 0;
@@ -232,6 +252,11 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
     @Override
     public void actionPerformed(ActionEvent e) //Función que sirve para funciones de eventos al dar click.
     {
+        if (e.getSource() == resetButton)
+        {
+            frame.dispose();
+            new Minesweeper();
+        }
         //Recorre la matriz
         for(int i=0;i<buttons.length;i++)
         {
@@ -242,4 +267,141 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
             }
         }
     }
+    public void display ()
+    {
+        if (count < 1)
+        {
+            if((xZero - 1) >= 0)
+				getColor(yZero, xZero - 1);
+			if((xZero + 1) < size)
+				getColor(yZero, xZero + 1);
+			if((yZero - 1) >= 0)
+				getColor(yZero - 1, xZero);
+			if((yZero + 1) < size)
+				getColor(yZero + 1, xZero);
+            if((yZero - 1) >= 0 && (xZero - 1) >= 0)
+				getColor(yZero - 1, xZero - 1);
+			if((yZero + 1) < size && (xZero + 1) < size)
+				getColor(yZero + 1, xZero + 1);
+            if((yZero - 1) >= 0 && (xZero + 1) < size)
+				getColor(yZero - 1, xZero + 1);
+			if((yZero + 1) < size && (xZero - 1) >= 0)
+				getColor(yZero + 1, xZero - 1);
+
+            count++;
+            display();
+        }
+        else
+		{
+			for(int y=0; y<buttons.length; y++)
+			{
+				for(int x=0; x<buttons[0].length; x++)
+				{
+					if(buttons[y][x].getText().equals("0"))
+					{
+						if(y-1>=0)
+						{
+							if(buttons[y-1][x].getText().equals("") || buttons[y-1][x].getText().equals("1>"))
+							{
+								lastXchecked=x;
+								lastYchecked=y;
+							}
+						}
+						if(y+1<size)
+						{
+							if(buttons[y+1][x].getText().equals("") || buttons[y+1][x].getText().equals("1>"))
+							{
+								lastXchecked=x;
+								lastYchecked=y;
+							}
+						}
+						if(x-1>=0)
+						{
+							if(buttons[y][x-1].getText().equals("") || buttons[y][x-1].getText().equals("1>"))
+							{
+								lastXchecked=x;
+								lastYchecked=y;
+							}
+						}
+						if(x+1<size)
+						{
+							if(buttons[y][x+1].getText().equals("") || buttons[y][x+1].getText().equals("1>"))
+							{
+								lastXchecked=x;
+								lastYchecked=y;
+							}
+						}
+						if(x-1>=0 && y-1>=0)
+						{
+							if(buttons[y-1][x-1].getText().equals("") || buttons[y-1][x-1].getText().equals("1>"))
+							{
+								lastXchecked=x;
+								lastYchecked=y;
+							}
+						}
+						if(x+1<size && y+1<size)
+						{
+							if(buttons[y+1][x+1].getText().equals("") || buttons[y+1][x+1].getText().equals("1>"))
+							{
+								lastXchecked=x;
+								lastYchecked=y;
+							}
+						}
+						if(x+1<size && y-1>=0)
+						{
+							if(buttons[y-1][x+1].getText().equals("") || buttons[y-1][x+1].getText().equals("1>"))
+							{
+								lastXchecked=x;
+								lastYchecked=y;
+							}
+						}
+						if(x-1>=0 && y+1<size)
+						{
+							if(buttons[y+1][x-1].getText().equals("") || buttons[y+1][x-1].getText().equals("1>"))
+							{
+								lastXchecked=x;
+								lastYchecked=y;
+							}
+						}
+					}
+				}
+			}			
+			if(lastXchecked<size+1 && lastYchecked<size+1)
+			{				
+				xZero=lastXchecked;
+				yZero=lastYchecked;
+				
+				count=0;
+				
+				lastXchecked=size+1;
+				lastYchecked=size+1;
+				
+				display();			
+			}
+		}
+	}
+    public void getColor (int y, int x)
+    {
+        if(solution[y][x]==0)
+			buttons[y][x].setEnabled(false);
+		if(solution[y][x]==1)
+			buttons[y][x].setForeground(Color.BLUE);
+		if(solution[y][x]==2)
+			buttons[y][x].setForeground(Color.GREEN);
+		if(solution[y][x]==3)
+			buttons[y][x].setForeground(Color.RED);
+		if(solution[y][x]==4)
+			buttons[y][x].setForeground(Color.MAGENTA);
+		if(solution[y][x]==5)
+			buttons[y][x].setForeground(new Color(128,0,128));
+		if(solution[y][x]==6)
+			buttons[y][x].setForeground(Color.CYAN);
+		if(solution[y][x]==7)
+			buttons[y][x].setForeground(new Color(42, 13, 93));
+		if(solution[y][x]==8)
+			buttons[y][x].setForeground(Color.lightGray);
+		
+		buttons[y][x].setBackground(null);
+		buttons[y][x].setText(String.valueOf(solution[y][x]));
+	}
 }
