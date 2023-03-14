@@ -5,7 +5,7 @@ import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class Minesweeper implements ActionListener, java.awt.event.ActionListener
+public class Pruebas implements ActionListener, java.awt.event.ActionListener
 {
     //Creación de las variables que se van a mostrar en pantalla
 	JFrame frame;
@@ -26,7 +26,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
     ArrayList<Integer> xPositions;
     ArrayList<Integer> yPositions;
 
-    public Minesweeper() //Donde se creará toda la interfáz a mostrar
+    public Pruebas() //Donde se creará toda la interfáz a mostrar
     {
         // Posiciones guardadas en un array
         xPositions = new ArrayList<Integer>();
@@ -112,7 +112,6 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
         textPanel.add(textfield);
 		frame.add(buttonPanel);
 		frame.add(textPanel, BorderLayout.NORTH);
-        frame.add(resetButton,BorderLayout.SOUTH);
 
         //Dimensiones de la pantalla, para actualizar la pantalla y centrarla
         frame.setSize(570,570);
@@ -122,7 +121,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
         getSolution(); //Se llama a la función
     }
 
-    public void getSolution() //Función para ver cuantas bombas hay al rededor de un botón y lo mete en una doble lista enlazada
+    public void getSolution() //Función para ver cúantas bombas hay al rededor de un botón y lo mete en una doble lista enlazada
     {
         for(int y=0; y<solution.length; y++)
         {
