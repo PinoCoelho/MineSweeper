@@ -1,9 +1,19 @@
 import javax.swing.*;
+
+//import org.w3c.dom.css.Counter;
+
 import java.awt.*;
 import java.awt.event.*;
 //import java.io.File;
 import java.util.ArrayList;
 import java.util.Random;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+//import javax.swing.SwingUtilities;
 
 public class Minesweeper implements ActionListener, java.awt.event.ActionListener
 {
@@ -13,7 +23,9 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
 	JPanel buttonPanel;
     int[][] solution;
 	JButton[][] buttons;
-    JButton resetButton;	
+    boolean[][] flagged;
+    JButton resetButton;
+    JButton flag;	
 	JLabel textfield;
 
     Random random;
@@ -35,15 +47,19 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
 
     public Minesweeper() //Donde se creará toda la interfáz a mostrar
     {
-        lastXchecked = size + 1;
-        lastYchecked = size + 1;
-
         // Posiciones guardadas en un array
         xPositions = new ArrayList<Integer>();
         yPositions = new ArrayList<Integer>();
 
         size = 8; //Tamaño de la matriz
         bombs = 10; //Cantidad de bombas
+
+        lastXchecked = size + 1;
+        lastYchecked = size + 1;
+
+        flagged = new boolean [size][size];
+
+        flagging = true;
 
         random = new Random();
         for(int i=0; i<bombs;i++) //Coloca las bombas de forma random en la matriz
@@ -79,7 +95,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
         //Se crea un panel de texto
         textPanel=new JPanel();
 		textPanel.setVisible(true);
-		textPanel.setBackground(Color.BLACK);
+		textPanel.setBackground(Color.WHITE);
 
         //Se crea un botón en el panel
         buttonPanel=new JPanel();
@@ -90,7 +106,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
         textfield=new JLabel();
 		textfield.setHorizontalAlignment(JLabel.CENTER);
 		textfield.setFont(new Font("MV Boli",Font.BOLD,20));
-		textfield.setForeground(Color.BLUE);
+		textfield.setForeground(Color.GREEN);
 		textfield.setText(bombs+" Bombs");
 
         resetButton=new JButton();
@@ -101,8 +117,56 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
 		resetButton.setFocusable(false);
 		resetButton.addActionListener(this);
 
+
         solution = new int[size][size];
         buttons=new JButton[size][size]; //Creación de una variable de botones
+
+        MouseListener mouseListener = new MouseAdapter() {
+            public void mousePressed(MouseEvent e) {
+                int modifiers = e.getModifiersEx();
+                if ((modifiers & InputEvent.BUTTON3_DOWN_MASK) == InputEvent.BUTTON3_DOWN_MASK) {
+                            //Quitar cualquier cosa:
+                    if (e.getSource() == resetButton)
+                    {
+                        frame.dispose();
+                        new Minesweeper();
+                    }
+                    //Recorre la matriz
+                    for(int i=0;i<buttons.length;i++)
+                    {
+                        for(int j=0;j<buttons[0].length;j++)
+                        {
+                            if(e.getSource()==buttons[i][j]) //Si se presiona cualquier botón
+                            {
+
+                                if (flagging)
+                                {
+                                    if (flagged[i][j])
+                                    {
+                                        buttons[i][j].setText("");
+                                        buttons[i][j].setBackground(null);
+                                        flagged[i][j] = false;
+                                    }
+                                    else
+                                    {
+                                        buttons[i][j].setText("|>");
+                                        buttons[i][j].setBackground(Color.RED);
+                                        buttons[i][j].setForeground(Color.ORANGE);
+                                        flagged[i][j] = true;
+                                    }
+                                }
+                                else
+                                {
+                                    if (!flagged[i][j])
+                                        check(i,j); //Llama la función check para ver si ganó o se perdió   
+                                }
+                            }
+                            
+                        }
+                    }
+                }
+            }
+        };
 
         //Se hará la matriz de 8x8 en forma de botones
 		for(int i=0; i<buttons.length; i++)
@@ -115,6 +179,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
 				buttons[i][j].setFont(new Font("MV Boli",Font.BOLD,12));
 				buttons[i][j].addActionListener(this);
 				buttons[i][j].setText("");
+                buttons[i][j].addMouseListener(mouseListener);
 				buttonPanel.add(buttons[i][j]);
 			}
 		}
@@ -244,7 +309,17 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
         {
             for(int j=0; j<buttons[0].length; j++)
             {
+                buttons[i][j].setBackground(null);
                 buttons[i][j].setEnabled(false); //Cuando recorre toda la matriz, hace que no se pueda jugar más
+
+                for (int count = 0; count < xPositions.size(); count++)
+                {
+                    if (j == xPositions.get(count) && i == yPositions.get(count))
+                    {
+                        buttons[i][j].setBackground(Color.BLACK);
+                        buttons[i][j].setText("*");
+                    }
+                }
             }
         }
     }
@@ -252,6 +327,8 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
     @Override
     public void actionPerformed(ActionEvent e) //Función que sirve para funciones de eventos al dar click.
     {
+
+        //Quitar cualquier cosa:
         if (e.getSource() == resetButton)
         {
             frame.dispose();
@@ -263,7 +340,11 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
             for(int j=0;j<buttons[0].length;j++)
             {
                 if(e.getSource()==buttons[i][j]) //Si se presiona cualquier botón
-                    check(i,j); //Llama la función check para ver si ganó o se perdió
+                {
+                        if (!flagged[i][j])
+                            check(i,j); //Llama la función check para ver si ganó o se perdió   
+                }
+                   
             }
         }
     }
@@ -382,23 +463,23 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
 	}
     public void getColor (int y, int x)
     {
-        if(solution[y][x]==0)
+        if(solution[y][x] == 0)
 			buttons[y][x].setEnabled(false);
-		if(solution[y][x]==1)
+		if(solution[y][x] == 1)
 			buttons[y][x].setForeground(Color.BLUE);
-		if(solution[y][x]==2)
+		if(solution[y][x] == 2)
 			buttons[y][x].setForeground(Color.GREEN);
-		if(solution[y][x]==3)
+		if(solution[y][x] == 3)
 			buttons[y][x].setForeground(Color.RED);
-		if(solution[y][x]==4)
+		if(solution[y][x] == 4)
 			buttons[y][x].setForeground(Color.MAGENTA);
-		if(solution[y][x]==5)
+		if(solution[y][x] == 5)
 			buttons[y][x].setForeground(new Color(128,0,128));
-		if(solution[y][x]==6)
+		if(solution[y][x] == 6)
 			buttons[y][x].setForeground(Color.CYAN);
-		if(solution[y][x]==7)
+		if(solution[y][x] == 7)
 			buttons[y][x].setForeground(new Color(42, 13, 93));
-		if(solution[y][x]==8)
+		if(solution[y][x] == 8)
 			buttons[y][x].setForeground(Color.lightGray);
 		
 		buttons[y][x].setBackground(null);
