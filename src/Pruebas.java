@@ -1,244 +1,49 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-//import java.io.File;
-import java.util.ArrayList;
-import java.util.Random;
 
-public class Pruebas implements ActionListener, java.awt.event.ActionListener
-{
-    //Creación de las variables que se van a mostrar en pantalla
-	JFrame frame;
-	JPanel textPanel;
-	JPanel buttonPanel;
-    int[][] solution;
-	JButton[][] buttons;
-    JButton resetButton;	
-	JLabel textfield;
+public class Pruebas extends JFrame implements ActionListener, java.awt.event.ActionListener {
 
-    Random random;
+    private static final long serialVersionUID = 1L;
+    private JLabel labelTiempo;
+    private Timer timer;
+    private int contadorTiempo;
 
+    public Pruebas() {
+        super("Cronómetro");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-    // Variables que se usarán para la lógica
-    int size;
-    int bombs;
+        // Crea el JLabel para mostrar el tiempo
+        labelTiempo = new JLabel("Tiempo: 00:00:00");
+        labelTiempo.setFont(new Font("Verdana", Font.BOLD, 20));
+        labelTiempo.setHorizontalAlignment(JLabel.CENTER);
+        add(labelTiempo, BorderLayout.CENTER);
 
-    ArrayList<Integer> xPositions;
-    ArrayList<Integer> yPositions;
+        // Crea el Timer para contar el tiempo
+        timer = new Timer(1000, this);
 
-    public Pruebas() //Donde se creará toda la interfáz a mostrar
-    {
-        // Posiciones guardadas en un array
-        xPositions = new ArrayList<Integer>();
-        yPositions = new ArrayList<Integer>();
-
-        size = 8; //Tamaño de la matriz
-        bombs = 10; //Cantidad de bombas
-
-        random = new Random();
-        for(int i=0; i<bombs;i++) //Coloca las bombas de forma random en la matriz
-        {
-            xPositions.add(random.nextInt(size));
-            yPositions.add(random.nextInt(size));
-        }
-        for(int i=0;i<bombs;i++) //Por si se pone dos bombas en un mismo lugar
-        {
-            for(int j=i+1; j<bombs; j++)
-            {
-                if(xPositions.get(i)==xPositions.get(j) && yPositions.get(i)==yPositions.get(j)) //Verifica si están en el mismo lugar
-                {
-                    // Las vuelve a poner de forma random en algún lugar
-                    xPositions.set(j, random.nextInt(size));
-					yPositions.set(j, random.nextInt(size));
-					i=0;
-					j=0;
-                }
-            }
-        }
-        for (int i=0;i<bombs;i++)
-        {
-            System.out.println("xPosition of "+ i + " is "+ xPositions.get(i));
-            System.out.println("yPosition of "+ i + " is "+ yPositions.get(i));
-        }
-        //Se crea la pantalla a mostrar
-        frame=new JFrame();
-		frame.setVisible(true);
-		frame.setLayout(new BorderLayout());
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
-
-        //Se crea un panel de texto
-        textPanel=new JPanel();
-		textPanel.setVisible(true);
-		textPanel.setBackground(Color.BLACK);
-
-        //Se crea un botón en el panel
-        buttonPanel=new JPanel();
-		buttonPanel.setVisible(true);
-		buttonPanel.setLayout(new GridLayout(size,size));
-
-        //Se crea una campo de texto
-        textfield=new JLabel();
-		textfield.setHorizontalAlignment(JLabel.CENTER);
-		textfield.setFont(new Font("MV Boli",Font.BOLD,20));
-		textfield.setForeground(Color.BLUE);
-		textfield.setText(bombs+" Bombs");
-
-        resetButton=new JButton();
-		resetButton.setForeground(Color.BLUE);
-		resetButton.setText("Reset");
-		resetButton.setFont(new Font("MV Boli", Font.BOLD, 20));
-		resetButton.setBackground(Color.WHITE);
-		resetButton.setFocusable(false);
-		resetButton.addActionListener(this);
-
-        solution = new int[size][size];
-        buttons=new JButton[size][size]; //Creación de una variable de botones
-
-        //Se hará la matriz de 8x8 en forma de botones
-		for(int i=0; i<buttons.length; i++)
-		{
-			for(int j=0; j<buttons[0].length; j++)
-			{
-                //Se empieza a ubicar los botones en la pantalla
-				buttons[i][j]=new JButton();
-				buttons[i][j].setFocusable(false);
-				buttons[i][j].setFont(new Font("MV Boli",Font.BOLD,12));
-				buttons[i][j].addActionListener(this);
-				buttons[i][j].setText("");
-				buttonPanel.add(buttons[i][j]);
-			}
-		}
-        //Implementación en la pantalla de las variables creadas
-        textPanel.add(textfield);
-		frame.add(buttonPanel);
-		frame.add(textPanel, BorderLayout.NORTH);
-
-        //Dimensiones de la pantalla, para actualizar la pantalla y centrarla
-        frame.setSize(570,570);
-        frame.revalidate();
-        frame.setLocationRelativeTo(null);
-
-        getSolution(); //Se llama a la función
+        // Configura la ventana
+        setSize(300, 150);
+        setLocationRelativeTo(null);
+        setResizable(false);
+        setVisible(true);
     }
 
-    public void getSolution() //Función para ver cúantas bombas hay al rededor de un botón y lo mete en una doble lista enlazada
-    {
-        for(int y=0; y<solution.length; y++)
-        {
-            for (int x=0; x<solution.length;x++)
-            {
-                boolean changed = false;
-                int bombsAround = 0;
-
-                for(int i=0; i<xPositions.size();i++)
-                {
-                    if(x == xPositions.get(i) && y == yPositions.get(i))
-                    {
-                        solution[y][x] = size + 1;
-                        changed = true;
-                    }
-                }
-                if(!changed)
-                {
-                    for(int i = 0; i < xPositions.size(); i++)
-                    {
-                        if(x-1 == xPositions.get(i) && y == yPositions.get(i)) // Se verifica si las posiciones alrededor son una bomba o no. Verifica las cordenadas de todas las 8 posiciones
-                          bombsAround++;
-                        if(x+1 == xPositions.get(i) && y == yPositions.get(i)) //Una posición por delante
-                            bombsAround++; 
-                        if(x == xPositions.get(i) && y-1 == yPositions.get(i)) //Una posición arriba
-                            bombsAround++;
-                        if(x == xPositions.get(i) && y+1 == yPositions.get(i)) // Una posición por debajo
-                            bombsAround++; 
-                        if(x+1 == xPositions.get(i) && y+1 == yPositions.get(i)) // Una posición abajo a la derecha
-                            bombsAround++;
-                        if(x-1 == xPositions.get(i) && y-1 == yPositions.get(i)) // Una posición arriba a la izquierda
-                            bombsAround++;
-                        if(x-1 == xPositions.get(i) && y+1 == yPositions.get(i)) //Una posición abajo a la izquierda
-                            bombsAround++;
-                        if(x+1 == xPositions.get(i) && y-1 == yPositions.get(i)) // Una posición arriba a la derecha
-                            bombsAround++;
-                    }
-                    solution[y][x] = bombsAround; //Pone las minas alrededor en una matriz
-                }
-            }
-            
-        }
-        for(int i=0; i<solution.length; i++)
-            {
-                for(int j=0; j<solution[0].length; j++)
-                    System.out.print(solution[i][j]+ " ");
-                System.out.println();
-            }
+    public void actionPerformed(ActionEvent e) {
+        contadorTiempo++;
+        int horas = contadorTiempo / 3600;
+        int minutos = (contadorTiempo % 3600) / 60;
+        int segundos = contadorTiempo % 60;
+        String tiempo = String.format("Tiempo: %02d:%02d:%02d", horas, minutos, segundos);
+        labelTiempo.setText(tiempo);
     }
 
-    public void check(int y, int x) //Función par detectar si ganó o perdió
-    {
-        boolean over=false;
-
-		if(solution[y][x]==(size+1)) //Si tocó una mina entonces se mete aquí
-		{
-            gameOver(false); //Llama la función cuando pierde
-			over = true;
-		}
-		
-		if(!over) //Si ganó entonces se mete aquí
-		{
-            buttons[y][x].setText(String.valueOf(solution[y][x])); 
-            checkWinner(); //Llama a la función cuando gana
-		}
-	}
-
-    public void checkWinner() //Función cuando se gana
-	{
-		int buttonsleft = 0;
-		
-        //Recorre la lista en busca de minas
-		for(int i=0; i<buttons.length; i++)  
-		{
-			for(int j=0; j<buttons[0].length; j++)
-			{
-				if(buttons[i][j].getText()== "") //Si ya no hay
-					buttonsleft++; //Aumenta 1 en la variable
-			}
-		}
-		if(buttonsleft == bombs) //Si es igual al número de bombas
-			gameOver(true); //Llama a la función de perdida con el el booleano en true, para saber qu ganó
-	}
-
-    public void gameOver(boolean won) //Función de que terminó el juego
-    {
-        if(!won) //Si el booleano es igual a false
-        {
-            textfield.setForeground(Color.RED);
-            textfield.setText("Terminó el juego"); //Manda este mensaje
-        }
-        else //Si es igual a true
-        {
-            textfield.setForeground(Color.GREEN);
-            textfield.setText("GANASTE"); //manda este mensaje
-        }
-
-        for(int i=0; i<buttons.length; i++)
-        {
-            for(int j=0; j<buttons[0].length; j++)
-            {
-                buttons[i][j].setEnabled(false); //Cuando recorre toda la matriz, hace que no se pueda jugar más
-            }
-        }
+    public void iniciarCronometro() {
+        timer.start();
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) //Función que sirve para funciones de eventos al dar click.
-    {
-        //Recorre la matriz
-        for(int i=0;i<buttons.length;i++)
-        {
-            for(int j=0;j<buttons[0].length;j++)
-            {
-                if(e.getSource()==buttons[i][j]) //Si se presiona cualquier botón
-                    check(i,j); //Llama la función check para ver si ganó o se perdió
-            }
-        }
+    public static void main(String[] args) {
+        Pruebas cronometro = new Pruebas();
+        cronometro.iniciarCronometro();
     }
 }
