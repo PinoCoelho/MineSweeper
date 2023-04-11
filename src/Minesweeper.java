@@ -8,6 +8,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.xml.namespace.QName;
 
 
 public class Minesweeper implements ActionListener, java.awt.event.ActionListener
@@ -21,15 +22,24 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
     boolean[][] flagged;
     JButton resetButton;
     JButton flag;	
+    JButton advancedButton;
+    JButton sugeButton;
 	JLabel textfield;
     JLabel textfield_minas;
     JLabel timerfield;
+    JPanel textPanel2;
+
 
     Random random;
+
+    Boolean level = false;
 
     LinkedList ListaGeneral = new LinkedList();
     LinkedList ListaSegura = new LinkedList();
     LinkedList ListaIncertidumbre = new LinkedList();
+
+    Stack pila = new Stack();
+    int contadorPila = 0;
 
     Timer timer;
     int contadorTiempo;
@@ -38,7 +48,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
 
     Boolean turnojugador = true;
 
-    // Variables que se usarán para la lógica
+    
     int size;
     int bombs;
 
@@ -68,9 +78,12 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
 
         flagging = true;
 
-        
+        timer = new Timer(1000, this);
 
         random = new Random();
+
+        solution = new int[size][size];
+        buttons = new JButton[size][size]; //Creación de una variable de botones
 
         for(int i = 0; i < bombs; i++) //Coloca las bombas de forma random en la matriz
         {
@@ -91,11 +104,14 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
                 }
             }
         }
-        for (int i = 0; i < bombs; i++)
+        /*
+        * for (int i = 0; i < bombs; i++)
         {
             System.out.println("xPosition of "+ i + " is "+ xPositions.get(i));
             System.out.println("yPosition of "+ i + " is "+ yPositions.get(i));
         }
+        */
+        
         //Se crea la pantalla a mostrar
         frame = new JFrame();
 		frame.setVisible(true);
@@ -108,19 +124,22 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
 		textPanel.setBackground(Color.WHITE);
         textPanel.setLayout(new GridLayout(1, 3));
 
+        textPanel2 = new JPanel();
+		textPanel2.setVisible(true);
+		textPanel2.setBackground(Color.WHITE);
+        textPanel2.setLayout(new GridLayout(1, 3));
+
         //Se crea un botón en el panel
         buttonPanel = new JPanel();
 		buttonPanel.setVisible(true);
 		buttonPanel.setLayout(new GridLayout(size,size));
 
+        //Se crea el label del cronómetro
         timerfield = new JLabel();
 		timerfield.setHorizontalAlignment(JLabel.LEFT);
 		timerfield.setFont(new Font("MV Boli",Font.BOLD,20));
 		timerfield.setForeground(Color.GREEN);
 		timerfield.setText("Tiempo: 00:00:00");
-        
-
-        timer = new Timer(1000, this);
 
         //Se crea una campo de texto
         textfield = new JLabel();
@@ -129,12 +148,30 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
 		textfield.setForeground(Color.GREEN);
 		textfield.setText(bombs + " Bombs");
 
+        //Se crea el label para mostrar las minas encontradas
         textfield_minas = new JLabel();
         textfield_minas.setBounds(-500, 50, 100, 30);
 		textfield_minas.setFont(new Font("MV Boli",Font.BOLD,20));
 		textfield_minas.setForeground(Color.GREEN);
 		textfield_minas.setText("Encontradas: ");
 
+        advancedButton = new JButton();
+		advancedButton.setForeground(Color.WHITE);
+		advancedButton.setText("Advanced");
+		advancedButton.setFont(new Font("MV Boli", Font.BOLD, 10));
+		advancedButton.setBackground(Color.BLACK);
+		advancedButton.setFocusable(false);
+		advancedButton.addActionListener(this);
+
+        sugeButton = new JButton();
+		sugeButton.setForeground(Color.BLUE);
+		sugeButton.setText("Sugerencia");
+		sugeButton.setFont(new Font("MV Boli", Font.BOLD, 20));
+		sugeButton.setBackground(Color.GREEN);
+		sugeButton.setFocusable(false);
+		sugeButton.addActionListener(this);
+
+        //Se crea el botón resetear
         resetButton = new JButton();
 		resetButton.setForeground(Color.BLUE);
 		resetButton.setText("Reset");
@@ -142,10 +179,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
 		resetButton.setBackground(Color.WHITE);
 		resetButton.setFocusable(false);
 		resetButton.addActionListener(this);
-
-
-        solution = new int[size][size];
-        buttons = new JButton[size][size]; //Creación de una variable de botones
+       
 
         MouseListener mouseListener = new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
@@ -221,7 +255,12 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
         //frame.add(textfield_minas, BorderLayout.EAST);
 		frame.add(buttonPanel);
 		frame.add(textPanel, BorderLayout.NORTH);
-        frame.add(resetButton,BorderLayout.SOUTH);
+        frame.add(textPanel2, BorderLayout.SOUTH);
+        //frame.add(resetButton,BorderLayout.SOUTH);
+        textPanel2.add(resetButton);
+        textPanel2.add(advancedButton);
+        textPanel2.add(sugeButton);
+        //frame.add(advancedButton,BorderLayout.WEST);
 
         //textPanel.setLayout(null);
         textPanel.add(textfield_minas);
@@ -275,12 +314,12 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
                             bombsAround++;
                     }
                     solution[y][x] = bombsAround; //Pone los números de las bombas alrededor
-                    ListaGeneral.addNode(x, y, bombsAround);
+                    ListaGeneral.addNode(y, x, bombsAround);
                 }
             }
             
         }
-        ListaGeneral.printList();
+        //ListaGeneral.printList();
         for(int i = 0; i < solution.length; i++)
             {
                 for(int j = 0; j < solution[0].length; j++)
@@ -293,9 +332,9 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
         ListNode temp = ListaGeneral.head;
         while (temp != null) {
             ListNode next = temp.next;
-            if (buttons[temp.xList][temp.yList].getText() == "")
+            if (buttons[7 - temp.xList][7 - temp.yList].getText() != "")
             {
-                ListaGeneral.deleteNode(temp.xList, temp.yList);
+                ListaGeneral.deleteNode(7 - temp.yList, 7- temp.xList);
             } 
             temp = next;
             }
@@ -311,7 +350,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
             {
                 ListNode temporal = ListaGeneral.getNodeAtPosition(xSize);
                 ListaIncertidumbre.addNode(temporal.xList, temporal.yList, temporal.nBombs);
-                ListaGeneral.deleteNode(temporal.xList, temporal.yList);
+                ListaGeneral.deleteNode(temporal.yList, temporal.xList);
                 System.out.print("Lista general: ");
                 ListaGeneral.printList();
                 System.out.print("Lista Incertidumbre: ");
@@ -322,7 +361,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
             {
                 ListNode temporal2 = ListaGeneral.getNodeAtPosition(xSize);
                 ListaSegura.addNode(temporal2.xList,temporal2.yList, temporal2.nBombs);
-                ListaGeneral.deleteNode(temporal2.xList, temporal2.yList);
+                ListaGeneral.deleteNode(temporal2.yList, temporal2.xList);
                 System.out.print("Lista general: ");
                 ListaGeneral.printList();
                 System.out.print("Lista Segura: ");
@@ -330,6 +369,16 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
                 turnocomputadoraAdvanced();
             }
         }
+        else
+        {
+
+        }
+    }
+
+    public void agregarSug()
+    {
+        ListNode temp = ListaGeneral.obtenerNodo();
+        pila.push(temp.xList, temp.yList, temp.nBombs);
     }
 
     public void check(int y, int x) //Función par detectar si ganó o perdió
@@ -433,29 +482,72 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
             iniciarCronometro();;
             
         }
-        if (turnojugador){
-           //Recorre la matriz
+        if (e.getSource() == sugeButton)
+        {
+            mostrarSug();
+        }
+
+        if (e.getSource() == advancedButton)
+        {
+            level = true;
+        }
+        if (turnojugador == true)
+        {
+            //Recorre la matriz
             for(int i = 0; i < buttons.length; i++)
             {
                 for(int j = 0; j < buttons[0].length; j++)
                 {
                     if(e.getSource() == buttons[i][j]) //Si se presiona cualquier botón
                     {
-                            if (!flagged[i][j])
-                                check(i,j); //Llama la función check para ver si ganó o se perdió   
-                                turnojugador = false;
-                                ListaGeneral.deleteNode(i, j);
+                        if (!flagged[i][j])
+                            check(i,j); //Llama la función check para ver si ganó o se perdió   
+                            turnojugador = false;
+                            ListaGeneral.deleteNode(i, j);
+                            contadorPila++;
+                            if (contadorPila == 5)
+                            {
+                                agregarSug();
+                                contadorPila = 0;
+                            }
                     }
-                    
+                            
                 }
-            } 
+            }
         }
-        else
+        else if(turnojugador == false && level == true)
         {
             advancedLevel();
             turnojugador = true;
         }
-        
+        else if (turnojugador == false && level == false)
+        {
+            turnocomputadora();
+            turnojugador = true; 
+        }
+    }
+
+    public void mostrarSug()
+    {
+        if (pila.estaVacia() == true)
+        {
+            JOptionPane.showMessageDialog(null, "No hay sugerencias", "Sugerencia vacía", JOptionPane.ERROR_MESSAGE);
+        }    
+        else
+        {
+            ListNode temp = pila.pop();
+            System.out.println("Fila: " + (7 - temp.xList) + "\n Columna: " + (7 - temp.yList));
+            if (buttons[7 - temp.xList][7 - temp.yList].getText() == "")
+            {
+                System.out.println(buttons[7 - temp.xList][7 - temp.yList]);
+                JOptionPane.showMessageDialog(null, "Fila: " + (7 - temp.xList) + "\n Columna: " + (7 - temp.yList) , "Sugerencia", JOptionPane.ERROR_MESSAGE);
+            }
+            else
+            {
+                mostrarSug();
+            }
+            
+        }
     }
 
     public void turnocomputadoraAdvanced()
@@ -464,12 +556,12 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
         if (ListaSegura.head != null)
         {
             listaCompu = ListaSegura.head;
-            ListaSegura.deleteNode(ListaSegura.head.xList, ListaSegura.head.yList);
+            //ListaSegura.deleteNode(ListaSegura.head.xList, ListaSegura.head.yList);
         }
         else
         {
             listaCompu = ListaIncertidumbre.head;
-            ListaIncertidumbre.deleteNode(ListaIncertidumbre.head.xList, ListaIncertidumbre.head.yList);
+            //ListaIncertidumbre.deleteNode(ListaIncertidumbre.head.xList, ListaIncertidumbre.head.yList);
         }
 
         int x = listaCompu.xList;
@@ -488,7 +580,8 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
         int y = random.nextInt(8);
         if (!flagged[x][y])
         {
-            check(x,y); //Llama la función check para ver si ganó o se perdió   
+            check(x,y); //Llama la función check para ver si ganó o se perdió
+            borrarCeldas();   
         }
         else
         {

@@ -56,6 +56,19 @@ public class LinkedList {
         return temp;
     }
 
+    public ListNode obtenerNodo()
+    {
+        ListNode temp = head;
+        while (temp != null) {
+            temp = temp.next;
+            if (temp.nBombs < 9) 
+            {
+                return temp;
+            }
+        }
+        return null;
+    }
+
     public void printList() {
         ListNode temp = head;
         while (temp != null) {
