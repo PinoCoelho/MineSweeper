@@ -8,10 +8,14 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.xml.namespace.QName;
+
+import org.firmata4j.firmata.*;
+import org.firmata4j.IODevice;
+import org.firmata4j.Pin;
+import java.io.IOException;
 
 
-public class Minesweeper implements ActionListener, java.awt.event.ActionListener
+public class Minesweeper implements ActionListener, java.awt.event.ActionListener 
 {
     //Creación de las variables que se van a mostrar en pantalla
 	JFrame frame;
@@ -48,6 +52,8 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
 
     Boolean turnojugador = true;
 
+    Arduino arduino = new Arduino();
+
     
     int size;
     int bombs;
@@ -62,7 +68,12 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
     int xZero;
     int yZero;
 
-    public Minesweeper() //Donde se creará toda la interfáz a mostrar
+    String USBPORT = "COM4"; // puerto usb donde esta conectado el arduino
+    
+    
+    
+
+    public Minesweeper()
     {
         // Posiciones guardadas en un array
         xPositions = new ArrayList<Integer>();
@@ -272,6 +283,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
         frame.setLocationRelativeTo(null);
 
         getSolution(); //Se llama a la función
+
     }
 
     public void getSolution() //Función para ver cuantas bombas hay al rededor de un botón y lo mete en una doble lista enlazada
@@ -484,7 +496,16 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
         }
         if (e.getSource() == sugeButton)
         {
-            mostrarSug();
+            //mostrarSug();
+            try {
+                arduino();
+            } catch (IOException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            } catch (InterruptedException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
         }
 
         if (e.getSource() == advancedButton)
@@ -705,6 +726,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
 				display();			
 			}
 		}
+
 	}
     public void getColor (int y, int x)
     {
@@ -732,5 +754,118 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
 	}
     public void iniciarCronometro() {
         timer.start();
+    }
+    public void arduino () throws IOException, InterruptedException
+    {
+        IODevice myArduino = new FirmataDevice(USBPORT); 
+
+        int xAr = 0;
+        int yAr = 0;
+
+        buttons[0][0].setBackground(Color.GREEN);
+
+        int ButtonSel = 2; // pin donde esta el boton 
+        int ButtonRight = 4; // pin donde esta el boton 
+        int ButtonLeft = 7; // pin donde esta el boton 
+        int ButtonDown = 8; // pin donde esta el boton 
+        int ButtonUp = 12; // pin donde esta el boton 
+        int LED = 13; // pin donde esta el LED
+
+        try { // se empieza el arduino
+            
+            myArduino.start(); 
+            myArduino.ensureInitializationIsDone();
+            System.out.println("El arduino se ha conectado");
+            
+        }
+        catch (IOException ioexception) { // si no se logra conectar, da este error
+            System.out.println("Trouble connecting to board");
+        }
+        finally { // aqui se pone el codigo que se quiera correr en el arduino
+            
+            Pin RedLED = myArduino.getPin(LED); // se asigna el pin a una variable
+            RedLED.setMode(Pin.Mode.OUTPUT); // se le asigna si es INPUT o OUTPUT, INPUT para botones, OUTPUT para LEDS y buzzer
+            
+            Pin buttonSel = myArduino.getPin(ButtonSel); // se asigna el pin a una variable
+            buttonSel.setMode(Pin.Mode.INPUT); // se le asigna si es INPUT o OUTPUT, INPUT para botones, OUTPUT para LEDS y buzzer
+            
+            Pin buttonRight = myArduino.getPin(ButtonRight); // se asigna el pin a una variable
+            buttonRight.setMode(Pin.Mode.INPUT); // se le asigna si es INPUT o OUTPUT, INPUT para botones, OUTPUT para LEDS y buzzer
+
+            Pin buttonLeft = myArduino.getPin(ButtonLeft); // se asigna el pin a una variable
+            buttonLeft.setMode(Pin.Mode.INPUT);
+
+            Pin buttonUp = myArduino.getPin(ButtonUp); // se asigna el pin a una variable
+            buttonUp.setMode(Pin.Mode.INPUT);
+
+            Pin buttonDown = myArduino.getPin(ButtonDown); // se asigna el pin a una variable
+            buttonDown.setMode(Pin.Mode.INPUT);
+        
+            while (true)
+            {
+                if (buttonSel.getValue() != 0) 
+                { 
+                    System.out.println("Adiós");
+                    break;
+                }
+                else if (buttonRight.getValue() != 0) // si el boton en el pin 3 se presiona
+                { 
+                    Thread.sleep(500);
+                    System.out.println("" + xAr + yAr);
+                    Thread.sleep(500); 
+                    buttons[yAr][xAr].setBackground(Color.GREEN);
+                    buttons[yAr][xAr].setText("Holi");
+                    if (xAr == 7)
+                    {
+                        xAr = 0;
+                    }
+                    else
+                    {
+                        xAr += 1;
+
+                    }
+                    break;
+                }
+                else if (buttonLeft.getValue() != 0)
+                {
+                    System.out.println("Pene");
+                    if (xAr == 0)
+                    {
+                        xAr = 7;
+                    }
+                    else
+                    {
+                        xAr -= 1;
+                    }
+                }
+                else if (buttonUp.getValue() != 0)
+                {
+                    System.out.println("Pene");
+                    if (yAr == 0)
+                    {
+                        yAr = 7;
+                    }
+                    else
+                    {
+                        yAr += 1;
+                    }
+                }
+                else if (buttonDown.getValue() != 0)
+                {
+                    System.out.println("Pene");
+                    if (yAr == 7)
+                    {
+                        yAr = 0;
+                    }
+                    else
+                    {
+                        yAr -= 1;
+                    }
+                }
+                buttons[0][0].setOpaque(true);
+                buttons[0][0].setBackground(Color.GREEN);
+                
+            }
+        }
     }
 }
