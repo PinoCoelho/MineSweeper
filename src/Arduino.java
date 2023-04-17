@@ -3,6 +3,9 @@ import org.firmata4j.IODevice;
 import org.firmata4j.Pin;
 import java.io.IOException;
 
+/*
+ * Toda esta clase es la original del Arduino, como se tenía planeado hacer, si quiere puede meter los Thread aquí para probar
+ */
 public class Arduino {
     
     static final String USBPORT = "COM4"; // puerto usb donde esta conectado el arduino
