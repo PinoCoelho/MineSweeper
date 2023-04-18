@@ -75,6 +75,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
     int xZero;
     int yZero;
 
+    Arduino arduino = new Arduino();
 
     String USBPORT = "COM4"; // Variable con el puerto USB donde está conectado el arduino
     
@@ -101,6 +102,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
      */
     public Minesweeper()
     {
+        /* 
         // Esto es para iniciar todo lo correspondiente al Arduino
         try { // Se empieza el arduino
             
@@ -137,9 +139,10 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
             catch (IOException IOException) {
                 System.out.print("Error setting up Pins");
             }
-
+        
 
         }
+        */
 
         // Posiciones guardadas en un array
         xPositions = new ArrayList<Integer>();
@@ -588,7 +591,9 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
         }
         if (e.getSource() == sugeButton) // Si se presiona el botón de sugerencia
         {
-            //mostrarSug(); //Se llama a la función para mostrar la sugerencia
+            mostrarSug(); //Se llama a la función para mostrar la sugerencia
+
+            /* 
             try {
                 arduino(0, 0);
             } catch (IOException e1) {
@@ -596,6 +601,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
             } catch (InterruptedException e1) {
                 e1.printStackTrace();
             }
+            */
         }
 
         if (e.getSource() == advancedButton) // Si se presiona el botón AdvancedLevel
