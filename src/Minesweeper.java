@@ -9,12 +9,12 @@ import java.awt.event.MouseListener;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 
-import org.firmata4j.firmata.*;
-import org.firmata4j.IODevice;
-import org.firmata4j.Pin;
-import java.io.IOException;
+//import org.firmata4j.firmata.*;
+//import org.firmata4j.IODevice;
+//import org.firmata4j.Pin;
+//import java.io.IOException;
 
-/*
+/**
  * Clase principal que contiene todo el juego MineSweeper
  */
 public class Minesweeper implements ActionListener, java.awt.event.ActionListener 
@@ -75,13 +75,14 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
     int xZero;
     int yZero;
 
-    Arduino arduino = new Arduino();
+    //Arduino arduino = new Arduino();
 
-    String USBPORT = "COM4"; // Variable con el puerto USB donde está conectado el arduino
+    //String USBPORT = "COM4"; // Variable con el puerto USB donde está conectado el arduino
     
-    IODevice myArduino = new FirmataDevice(USBPORT);  //Variable para iniciar Firmata con mi arduino
+    //IODevice myArduino = new FirmataDevice(USBPORT);  //Variable para iniciar Firmata con mi arduino
 
     //Variables donde están los botones y el led del arduino
+    /* 
     int ButtonSel = 2; // Variable con el pin donde esta el boton seleccionar
     int ButtonRight = 4; // Variable con el pin donde esta el boton derecho
     int ButtonLeft = 7; // Variable con el pin donde esta el boton izquierdo
@@ -96,8 +97,9 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
     Pin buttonLeft;
     Pin buttonUp;
     Pin buttonDown;
+    */
 
-    /*
+    /**
      * Este es el método constructor, aquí se construye todo lo que se muestra en pantalla o lo que se quiere que se inicie de un solo.
      */
     public Minesweeper()
@@ -265,7 +267,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
        
 
         MouseListener mouseListener = new MouseAdapter() {
-            /*
+            /**
              * Metodo para obtener el click del botón derecho del mouse
              */
             public void mousePressed(MouseEvent e) {
@@ -352,7 +354,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
         getSolution(); //Se llama a la función
 
     }
-    /*
+    /**
      * Metodo que lo que hace es obtener las posiciones de la matriz, hace que ponga el número a los botones en caso de tener minas alrededor
      */
     public void getSolution() //Función para ver cuantas bombas hay al rededor de un botón y lo mete en una doble lista enlazada
@@ -409,7 +411,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
                 System.out.println();
             }
     }
-    /*
+    /**
      * Metodo para borrar las celdas que ya se han abierto
      */
     public void borrarCeldas ()
@@ -417,14 +419,14 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
         ListNode temp = ListaGeneral.head;
         while (temp != null) { //Mientras temp no sea nulo
             ListNode next = temp.next;
-            if (buttons[7 - temp.xList][7 - temp.yList].getText() != "") //Se pone el largo al que se quiere llegar
+            if (buttons[temp.xList][temp.yList].getText() != "") //Se pone el largo al que se quiere llegar
             {
-                ListaGeneral.deleteNode(7 - temp.yList, 7- temp.xList); //Se elimina de la lista General
+                ListaGeneral.deleteNode(temp.xList, temp.yList); //Se elimina de la lista General
             } 
             temp = next;
             }
     }
-    /*
+    /**
      * Metodo del advanced level para imprimir las listas en consola, cambiar las los nodos seguros a la lista Segura y donde haya mina a la incertidumbre
      */
     public void advancedLevel()
@@ -461,7 +463,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
 
         }
     }
-    /*
+    /**
      * Metodo para agregar la SUgerencia a la pila
      */
     public void agregarSug()
@@ -469,9 +471,11 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
         ListNode temp = ListaGeneral.obtenerNodo();
         pila.push(temp.xList, temp.yList, temp.nBombs); //Se agrega a la pila
     }
-    /*
-     * Metodo para verificar si se ganó o se perdió 
-     * @param y,x
+    
+    /** 
+     * Metodo para verificar si se ganó o se perdió
+     * @param y
+     * @param x
      */
     public void check(int y, int x) //Función par detectar si ganó o perdió
     {
@@ -501,7 +505,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
             checkWinner(); //Llama a la función para verificar si se gana
         }
     }
-    /*
+    /**
      * Metodo cuando se gana en el juego
      */
     public void checkWinner() //Función cuando se gana
@@ -520,7 +524,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
 		if(buttonsleft == bombs) //Si es igual al número de bombas
 			gameOver(true); //Llama a la función de perdida con el booleano en true
 	}
-    /*
+    /**
      * Metodo para cuando se pierde o se gana en el juego
      * @param won
      */
@@ -559,7 +563,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
         }
     }
 
-    /*
+    /**
      * Metodo que nos ayuda a poder saber cuando un botón está siendo presionado
      */
     @Override
@@ -578,12 +582,13 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
         //Para resetear
         if (e.getSource() == resetButton) //Si se presiona el botón
         {
+            /* 
             try {
                 myArduino.stop(); //Se para el arduino
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
-
+            */
             frame.dispose(); //Se para el frame
             new Minesweeper(); //Se vuelve a llamar al contructor para que ejecute tra vez todo
             iniciarCronometro(); //Se inicia el cronómetro
@@ -606,6 +611,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
 
         if (e.getSource() == advancedButton) // Si se presiona el botón AdvancedLevel
         {
+            System.out.println("Advanced Level TRUE");
             level = true; //Se vuelve true la variable level para saber que se está jugando en advanced
         }
         if (turnojugador == true) //Si es el turno del jugador
@@ -634,6 +640,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
         }
         else if(turnojugador == false && level == true) //Si el turno del jugador es false y el level es true
         {
+            borrarCeldas();
             advancedLevel(); //Se llama aadvancedLevel para que imprimi las listas y juegue
             turnojugador = true; //Y se vuelve a activar el turno del jugador
         }
@@ -643,7 +650,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
             turnojugador = true; //Y el turnojugador se vuelve a activar
         }
     }
-    /*
+    /**
      * Metodo para mostrar la sugerencia, si es que hay o ya se han jugado más de 5 veces
      */
     public void mostrarSug()
@@ -669,21 +676,22 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
             
         }
     }
-    /*
+    /**
      * Metodo cuando es el turno de la computadora en modo advanced
      */
     public void turnocomputadoraAdvanced()
     {
+        borrarCeldas();
         ListNode listaCompu;
         if (ListaSegura.head != null) //Si no está vacía la lista segura
         {
             listaCompu = ListaSegura.head; //Juega el nodo de Lista Segura
-            //ListaSegura.deleteNode(ListaSegura.head.xList, ListaSegura.head.yList);
+            ListaSegura.head = ListaSegura.head.next;
         }
         else //Si está vacía
         {
             listaCompu = ListaIncertidumbre.head; //Juega el nodo de Lista Incertidumbre
-            //ListaIncertidumbre.deleteNode(ListaIncertidumbre.head.xList, ListaIncertidumbre.head.yList);
+            ListaIncertidumbre.head = ListaIncertidumbre.head.next;
         }
 
         //Variables para obtener las posiciones en x y y
@@ -696,7 +704,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
             borrarCeldas(); //Borra las celdas
         }
     }
-    /*
+    /**
      * Metodo que contiene el turno de la computadora en modo DummyLevel
      */
     public void turnocomputadora()
@@ -715,7 +723,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
         }
 
     }
-    /*
+    /**
      * Metodo que contiene toda las funciones para revelar los botones cada vez que se presionan
      */
     public void display ()
@@ -839,9 +847,10 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
 		}
 
 	}
-    /*
+    /**
      * Metodo para cambiar de color los textos que revelan los botones
-     * @param y,x
+     * @param y
+     * @param x
      */
     public void getColor (int y, int x)
     {
@@ -868,19 +877,17 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
 		buttons[y][x].setBackground(null);
 		buttons[y][x].setText(String.valueOf(solution[y][x]));
 	}
-    /*
+    /**
      * Metodo para iniciar el cronómetro
      */
     public void iniciarCronometro() {
         timer.start(); //Se inicia el cronómetro
     }
+    
     /*
-     * Metodo que contiene todo lo del arduino
-     * @param xAr, yAr
-     */
     public void arduino (int xAr, int yAr) throws IOException, InterruptedException
     {
-        /* 
+         
         if (buttonSel.getValue() != 0) 
         { 
             System.out.println("Adiós");
@@ -938,7 +945,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
                 yAr -= 1;
             }
         }
-        */
+        
 
         //Este es el loop infinito para que se esté ejecutando todo lo que quiero del arduino
         while(true) {
@@ -951,4 +958,6 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
         }
         arduino(xAr+1, yAr+1); //Manda los valores
     }
+    */
+    
 }

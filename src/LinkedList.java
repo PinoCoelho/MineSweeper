@@ -1,19 +1,22 @@
-/*
+/**
  * Clase de la lista enlazada, de aquí se añade los nodos, se borran los nodos, etc...
  */
 public class LinkedList {
     ListNode head;
 
-    /*
+    /**
      *  Constructor de la clase LinkedList
      */
     public LinkedList() {
         head = null;
     }
-    /*
-    * Metodo para añadir Nodos a la lista enlazada
-    * @param x,y,nbombs
-    */
+    
+    /** 
+     * Metodo para añadir Nodos a la lista enlazada
+     * @param x
+     * @param y
+     * @param nBombs
+     */
     public void addNode(int x, int y, int nBombs) {
         ListNode newNode = new ListNode(x, y, nBombs); //Sse crea el nuevo nodo a añadir
         if (head == null) { //Si head está apuntando a vacío
@@ -26,9 +29,11 @@ public class LinkedList {
             temp.next = newNode; //Y ese siguiente apunta al nuevo nodo
         }
     }
-    /*
+    /**
      * Metodo para eliminar nodos
-     * @param x,y,nbombs
+     * @param x
+     * @param y
+     * @param nBombs
      */
     public void deleteNode(int x, int y) {
         if (head == null) { //Si está vacío entonces no haga nada
@@ -49,7 +54,7 @@ public class LinkedList {
             curr = curr.next; //Se elimina el nodo
         }
     }
-    /*
+    /**
      * Metodo para obtener el tamaño de la lista enlazada
      */
     public int getSize() {
@@ -61,7 +66,7 @@ public class LinkedList {
         }
         return size; //Cuando termine devuelva el tamaño
     }
-    /*
+    /**
      * Metodo para obtener la posición del nodo
      * @param position
      */
@@ -75,7 +80,7 @@ public class LinkedList {
         }
         return temp;
     }
-    /*
+    /**
      * Metodo para obtener el nodo
      */
     public ListNode obtenerNodo()
@@ -90,7 +95,7 @@ public class LinkedList {
         }
         return null;
     }
-    /*
+    /**
      * Metodo para hacer print de la lista enlazada
      */
     public void printList() {
