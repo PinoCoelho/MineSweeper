@@ -10,9 +10,13 @@ public class Arduino {
     
     static final String USBPORT = "COM4"; // puerto usb donde esta conectado el arduino
     
-    static final int ButtonSel = 3; // pin donde esta el boton 
-    static final int ButtonRight = 2; // pin donde esta el boton
-    static final int LED = 7; // pin donde esta el LED
+    static final int LED = 8; // pin donde esta el LED
+    static final int Buzzer = 9; // pin donde esta el LED
+
+    static IODevice myArduino = new FirmataDevice(USBPORT);
+
+    Pin RedLED;
+    Pin BuzzerPin;
     
     
     /** 
@@ -20,8 +24,8 @@ public class Arduino {
      * @throws IOException
      * @throws InterruptedException
      */
-    public static void main(String[] args) throws IOException, InterruptedException {
-        IODevice myArduino = new FirmataDevice(USBPORT); 
+    public Arduino() throws IOException, InterruptedException {
+        //IODevice myArduino = new FirmataDevice(USBPORT); 
         try { // se empieza el arduino
             
             myArduino.start(); 
@@ -34,35 +38,47 @@ public class Arduino {
         }
         finally { // aqui se pone el codigo que se quiera correr en el arduino
             
-            Pin RedLED = myArduino.getPin(LED); // se asigna el pin a una variable
+            RedLED = myArduino.getPin(LED); // se asigna el pin a una variable
             RedLED.setMode(Pin.Mode.OUTPUT); // se le asigna si es INPUT o OUTPUT, INPUT para botones, OUTPUT para LEDS y buzzer
-            
-            Pin buttonSel = myArduino.getPin(ButtonSel); // se asigna el pin a una variable
-            buttonSel.setMode(Pin.Mode.INPUT); // se le asigna si es INPUT o OUTPUT, INPUT para botones, OUTPUT para LEDS y buzzer
-            
-            Pin buttonRight = myArduino.getPin(ButtonRight); // se asigna el pin a una variable
-            buttonRight.setMode(Pin.Mode.INPUT); // se le asigna si es INPUT o OUTPUT, INPUT para botones, OUTPUT para LEDS y buzzer
-
-            
-            while (true) {
-                if (buttonSel.getValue() != 0) { // si el boton en el pin 2 se presiona
-                    Thread.sleep(500);
-                    System.out.println("Presiona");
-                    RedLED.setValue(1);// se prende el LED
-                    Thread.sleep(500); 
-                }
-                else if (buttonRight.getValue() != 0) { // si el boton en el pin 3 se presiona
-                    System.out.println("Adios");
-                    break; // se para el ciclo y se para el codigo 
-                }
-                else { // si no esta el boton en el pin 2 presionado 
-                    RedLED.setValue(0); // se apaga el LED
-                }
-            }
-            
-            myArduino.stop(); // se para el arduino
+            BuzzerPin = myArduino.getPin(Buzzer);
+            BuzzerPin.setMode(Pin.Mode.PWM);
             
         }
+    }
+    /**
+     * Metodo para hacer que se prenda el led 
+     */
+    public void led ()
+    {
+        try {
+            RedLED.setValue(1); // Se enciende el LED
+            Thread.sleep(500); // Se espera medio segundo
+            RedLED.setValue(0); // Se apaga el LED
+        } catch (IOException | InterruptedException ex) {
+            ex.printStackTrace();
+        }
+    }
+    /**
+     * Metodo para que el buzzer haga un sonido más bajo cuando se presiona una celda sin mina
+     * @throws IllegalStateException
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public void buzzerBajo () throws IllegalStateException, IOException, InterruptedException {
+        BuzzerPin.setValue(1); // send 1KHz sound signal to the buzzer
+        Thread.sleep(500); // wait for 1 second
+        BuzzerPin.setValue(0);
+    }
+    /**
+     * Metodo para que el buzzer haga un sonido más alto si se presiona una mina
+     * @throws IllegalStateException
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public void buzzerAlto () throws IllegalStateException, IOException, InterruptedException {
+        BuzzerPin.setValue(1005); // send 1KHz sound signal to the buzzer
+        Thread.sleep(1500); // wait for 1 second
+        BuzzerPin.setValue(0);
     }
     
 }

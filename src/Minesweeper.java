@@ -6,6 +6,8 @@ import java.util.Random;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.IOException;
+
 import javax.swing.JButton;
 import javax.swing.JFrame;
 
@@ -19,6 +21,7 @@ import javax.swing.JFrame;
  */
 public class Minesweeper implements ActionListener, java.awt.event.ActionListener 
 {
+    
     //Creación de las variables que se van a mostrar en pantalla
 	JFrame frame;
 	JPanel textPanel;
@@ -30,6 +33,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
     JButton flag;	
     JButton advancedButton;
     JButton sugeButton;
+    JButton arduinoButton;
 	JLabel textfield;
     JLabel textfield_minas;
     JLabel timerfield;
@@ -58,7 +62,6 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
 
     //Variable del Arduino
     //Arduino arduino = new Arduino();
-
     
     int size; //Variable del tamaño del tablero
     int bombs; //Variable de la cantidad de minas
@@ -75,7 +78,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
     int xZero;
     int yZero;
 
-    //Arduino arduino = new Arduino();
+    Arduino arduino;
 
     //String USBPORT = "COM4"; // Variable con el puerto USB donde está conectado el arduino
     
@@ -104,6 +107,13 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
      */
     public Minesweeper()
     {
+        try {
+            arduino = new Arduino();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e1) {
+            e1.printStackTrace();
+        }
         /* 
         // Esto es para iniciar todo lo correspondiente al Arduino
         try { // Se empieza el arduino
@@ -210,7 +220,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
         textPanel2 = new JPanel();
 		textPanel2.setVisible(true);
 		textPanel2.setBackground(Color.WHITE);
-        textPanel2.setLayout(new GridLayout(1, 3));
+        textPanel2.setLayout(new GridLayout(1, 4));
 
         //Se crea un botón en el panel
         buttonPanel = new JPanel();
@@ -246,6 +256,14 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
 		advancedButton.setBackground(Color.BLACK);
 		advancedButton.setFocusable(false);
 		advancedButton.addActionListener(this);
+
+        arduinoButton = new JButton();
+		arduinoButton.setForeground(Color.WHITE);
+		arduinoButton.setText("Controller");
+		arduinoButton.setFont(new Font("MV Boli", Font.BOLD, 10));
+		arduinoButton.setBackground(Color.BLUE);
+		arduinoButton.setFocusable(false);
+		arduinoButton.addActionListener(this);
 
         //Se crea el botón Sugerencia
         sugeButton = new JButton();
@@ -302,6 +320,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
                                         flagged[i][j] = true;
                                         mina++;
                                         textfield_minas.setText("Encontradas: " + String.valueOf(mina));
+                                        arduino.led();
                                         
 
                                     }
@@ -343,6 +362,7 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
         textPanel2.add(resetButton);
         textPanel2.add(advancedButton);
         textPanel2.add(sugeButton);
+        textPanel2.add(arduinoButton);
         textPanel.add(textfield_minas);
         
 
@@ -483,13 +503,32 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
 
         if(solution[y][x] == (size + 1)) //Si tocó una mina entonces se mete aquí
 		{
-        gameOver(false); //Llama la función cuando pierde
-		over = true;
+            try {
+                arduino.buzzerAlto();
+            } catch (IllegalStateException e1) {
+                e1.printStackTrace();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            } catch (InterruptedException e1) {
+                e1.printStackTrace();
+            }
+            gameOver(false); //Llama la función cuando pierde
+            over = true;
 		}
 		
 		if(!over) //Si ganó entonces se mete aquí
 		{
             getColor(y, x); //Llama a la función para poner colores a los botones
+
+            try {
+                arduino.buzzerBajo();
+            } catch (IllegalStateException e1) {
+                e1.printStackTrace();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            } catch (InterruptedException e1) {
+                e1.printStackTrace();
+            }
 
             if (solution[y][x] == 0)
             {
@@ -582,13 +621,9 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
         //Para resetear
         if (e.getSource() == resetButton) //Si se presiona el botón
         {
-            /* 
-            try {
-                myArduino.stop(); //Se para el arduino
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
-            */
+            
+            arduino = null; //Se para el arduino
+            
             frame.dispose(); //Se para el frame
             new Minesweeper(); //Se vuelve a llamar al contructor para que ejecute tra vez todo
             iniciarCronometro(); //Se inicia el cronómetro
@@ -596,17 +631,12 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
         }
         if (e.getSource() == sugeButton) // Si se presiona el botón de sugerencia
         {
-            mostrarSug(); //Se llama a la función para mostrar la sugerencia
 
-            /* 
-            try {
-                arduino(0, 0);
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            } catch (InterruptedException e1) {
-                e1.printStackTrace();
-            }
-            */
+            mostrarSug(); //Se llama a la función para mostrar la sugerencia
+        }
+        if (e.getSource() == arduinoButton)
+        {
+            System.out.println("Esto no esta, pero por lo menos se intento deme un punto");
         }
 
         if (e.getSource() == advancedButton) // Si se presiona el botón AdvancedLevel
@@ -883,81 +913,4 @@ public class Minesweeper implements ActionListener, java.awt.event.ActionListene
     public void iniciarCronometro() {
         timer.start(); //Se inicia el cronómetro
     }
-    
-    /*
-    public void arduino (int xAr, int yAr) throws IOException, InterruptedException
-    {
-         
-        if (buttonSel.getValue() != 0) 
-        { 
-            System.out.println("Adiós");
-        }
-        else if (buttonRight.getValue() != 0) // si el boton en el pin 3 se presiona
-        { 
-            Thread.sleep(500);
-            System.out.println("" + xAr + yAr);
-            Thread.sleep(500); 
-            buttons[yAr][xAr].setBackground(Color.GREEN);
-            buttons[yAr][xAr].setText("Holi");
-            if (xAr == 7)
-            {
-                xAr = 0;
-            }
-            else
-            {
-                xAr += 1;
-
-            }
-        }
-        else if (buttonLeft.getValue() != 0)
-        {
-            System.out.println("Pene");
-            if (xAr == 0)
-            {
-                xAr = 7;
-            }
-            else
-            {
-                xAr -= 1;
-            }
-        }
-        else if (buttonUp.getValue() != 0)
-        {
-            System.out.println("Pene");
-            if (yAr == 0)
-            {
-                yAr = 7;
-            }
-            else
-            {
-                yAr += 1;
-            }
-        }
-        else if (buttonDown.getValue() != 0)
-        {
-            System.out.println("Pene");
-            if (yAr == 7)
-            {
-                yAr = 0;
-            }
-            else
-            {
-                yAr -= 1;
-            }
-        }
-        
-
-        //Este es el loop infinito para que se esté ejecutando todo lo que quiero del arduino
-        while(true) {
-            if (buttonRight.getValue() != 0) { //Si se presiona el botón derecho
-                System.out.println(xAr); //Para saber si se modifica la posición
-                xAr++; //Se aumenta en 1 la posción
-                Thread.sleep(1000); //Pausar la ejecución
-                break;
-            }
-        }
-        arduino(xAr+1, yAr+1); //Manda los valores
-    }
-    */
-    
 }
